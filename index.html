@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>我的图床首页</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="./favicon.ico" />
+  <!-- Stylesheet-->
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.min.js"></script>
+  <script type="text/javascript" src="js/jquery.1.11.1.js"></script>
+
+  <script>
+    var BASE_URL = 'http://localhost:9999'
+    // var BASE_URL = 'http://106.15.41.134'
+  </script>
+  <script type="text/javascript" src="js/main.js"></script>
+
+</head>
+
+<body oncontextmenu="doNothing()">
+  <!-- 提示框预留DIV -->
+  <div class="tipsBox"> </div>
+
+  <!-- 右键菜单 -->
+  <ul class="right_menu">
+    <li class="copy">copy</li>
+    <li class="delete">删除</li>
+  </ul>
+
+  <!-- Header -->
+  <header id="header">
+    <div class="intro">
+      <div class="intro-text">
+        <h1>南墙一枝花 の Image_bed</h1>
+        <p>
+          <span id="appear"></span><span id="guangbiao">|</span>
+        </p>
+        <a href="http://nanqyzh.cn" target="_blank">Learn Me</a>
+      </div>
+      <div class="pwd">
+        <input type="text" name="" id="pwd" value="︶O︶">
+      </div>
+    </div>
+    </div>
+  </header>
+
+
+  <main>
+    <div id="imgbed">
+
+      <h1>PORTFOLIO</h1>
+      <div id="operation">
+        <button class="btn">上传</button>
+      </div>
+
+      <!-- 上传弹框 -->
+      <div class="upload_model hide">
+        <div class="ele">
+          <div>
+            <input type="text" class="inputTag" placeholder="Tag">
+            <a href="javascript:;" class="a-upload">
+              <input type="file" name="" id="imgfill" accept="image/*">选择
+            </a>
+          </div>
+          <div>
+            <button class="imgsbm">确认</button>
+          </div>
+        </div>
+      </div>
+
+      <ul id="tag">
+        <li class="active">0^0</li>
+      </ul>
+
+      <ul id="imglist">
+        <li><img src="./img/portfolio/img1.jpg" alt=""></li>
+        <li><img src="./img/portfolio/img2.jpg" alt=""></li>
+        <li><img src="./img/portfolio/img3.jpg" alt=""></li>
+        <li><img src="./img/portfolio/img4.jpg" alt=""></li>
+        <li><img src="./img/portfolio/img5.jpg" alt=""></li>
+        <li><img src="./img/portfolio/img6.jpg" alt=""></li>
+        <li><img src="./img/portfolio/img7.jpg" alt=""></li>
+        <li><img src="./img/portfolio/img8.jpg" alt=""></li>
+        <li><img src="./img/portfolio/img9.jpg" alt=""></li>
+      </ul>
+
+
+    </div>
+
+  </main>
+
+  <footer>
+    <div id="footer">
+      <input id="cpoyspan" style="opacity: 0;"></input>
+    </div>
+  </footer>
+
+
+</body>
+<script>
+  //禁止右键菜单
+  function doNothing() {
+    window.event.returnValue = false;
+    return false;
+  }
+
+  /**
+ * 提示框方法
+ * @param {type: 'success', message: '上传成功'} 
+ * type：success|error
+ * @return {void}
+ */
+  function tipsBox(option) {
+
+    let success = `<svg t="1626405525526" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+      p-id="2723" width="20" height="20" style="margin:5px 10px -3px 10px";>
+      <path
+        d="M512 989.866667C249.173333 989.866667 34.133333 774.826667 34.133333 512S249.173333 34.133333 512 34.133333s477.866667 215.04 477.866667 477.866667-215.04 477.866667-477.866667 477.866667z m0-887.466667C286.72 102.4 102.4 286.72 102.4 512s184.32 409.6 409.6 409.6 409.6-184.32 409.6-409.6S737.28 102.4 512 102.4z"
+        fill="#191919" p-id="2724"></path>
+      <path
+        d="M520.533333 836.266667c-131.413333 0-238.933333-107.52-238.933333-238.933334h68.266667c0 93.866667 76.8 170.666667 170.666666 170.666667s170.666667-76.8 170.666667-170.666667h68.266667c0 131.413333-107.52 238.933333-238.933334 238.933334z"
+        fill="#191919" p-id="2725"></path>
+      <path
+        d="M244.053333 506.88l-35.84-58.026667 100.693334-63.146666-90.453334-88.746667 49.493334-47.786667 148.48 150.186667zM771.413333 506.88l-172.373333-107.52 148.48-150.186667 49.493333 47.786667-90.453333 88.746667 100.693333 63.146666z"
+        fill="#00C97C" p-id="2726"></path>
+    </svg>`
+    let error = `   <svg t="1626405703262" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+      p-id="4028" width="20" height="20" style="margin:5px 10px -3px 10px";>
+      <path
+        d="M512 989.866667C249.173333 989.866667 34.133333 774.826667 34.133333 512S249.173333 34.133333 512 34.133333s477.866667 215.04 477.866667 477.866667-215.04 477.866667-477.866667 477.866667z m0-887.466667C286.72 102.4 102.4 286.72 102.4 512s184.32 409.6 409.6 409.6 409.6-184.32 409.6-409.6S737.28 102.4 512 102.4z"
+        fill="#191919" p-id="4029"></path>
+      <path
+        d="M716.8 791.893333h-68.266667c0-73.386667-59.733333-134.826667-134.826666-134.826666-73.386667 0-134.826667 59.733333-134.826667 134.826666h-68.266667c0-110.933333 90.453333-203.093333 203.093334-203.093333S716.8 679.253333 716.8 791.893333z"
+        fill="#191919" p-id="4030"></path>
+      <path d="M204.8 375.466667h238.933333v68.266666H204.8z" fill="#d81e06" p-id="4031"
+        data-spm-anchor-id="a313x.7781069.0.i13" class="selected"></path>
+      <path
+        d="M290.133333 290.133333h68.266667v238.933334h-68.266667zM665.6 290.133333h68.266667v238.933334h-68.266667z"
+        fill="#d81e06" p-id="4032" data-spm-anchor-id="a313x.7781069.0.i14" class="selected"></path>
+      <path d="M580.266667 375.466667h238.933333v68.266666H580.266667z" fill="#d81e06" p-id="4033"
+        data-spm-anchor-id="a313x.7781069.0.i15" class="selected"></path>
+    </svg>`
+
+    var html = '';
+    if (option.type == 'success') html += `<div class="${option.type}" >${success}${option.message}</div>`;
+    if (option.type == 'error') html += `<div class="${option.type}" >${error}${option.message}</div>`;
+
+    $(".tipsBox").html(html)
+
+    $(".tipsBox").addClass('tipshow');
+    // 延迟取消
+    setTimeout(function () {
+      $(".tipsBox").removeClass('tipshow');
+    }, 1000);
+
+  }
+
+
+  var index = 0;//每句话字数的index
+  var huaindex = 0;//每句话的index
+  let data = ['如果你找不到一个坚持下去的理由 那就找一个重新开始的理由', 'Sometimes, all we need is a quiet heart', '星光不问赶路人, 时光不负追梦人']
+  //打字
+  function add(data) {
+    $("#appear").text(data.substring(0, index++));
+    return index
+  }
+  //清除
+  function clearadd(data) {
+    $("#appear").text(data.substring(0, index--))
+    return index
+  }
+
+  //开始打字
+  function timerinit() {
+
+    let timerone = setInterval(() => {
+      if (add(data[huaindex]) > data[huaindex].length) {
+        clearInterval(timerone)
+        //清除文字
+        let timerclear = setInterval(() => {
+
+          if (clearadd(data[huaindex]) < 0) {
+            clearInterval(timerclear)
+            huaindex++
+
+            if (huaindex < data.length) timerinit(huaindex)   //下一句
+            if (huaindex == data.length) {
+              huaindex = 0
+              setTimeout(() => timerinit(huaindex), 3000);    //重头开始
+            }
+          }
+
+        }, 100)
+      }
+
+    }, 300)
+  }
+  timerinit(huaindex)
+
+
+  //上传
+  $('.btn').click((e) => $('.upload_model').removeClass('hide')) //显示弹框
+  $('.upload_model').click((e) => $('.upload_model').addClass('hide'))//隐藏弹框
+  $(".ele").click((e) => e.stopPropagation())//子节点事件阻止父节点事件
+
+  //提交
+  $(".imgsbm").click((e) => {
+
+    //无值提交提示框变红
+    if (!$('.inputTag').val()) return $('.inputTag').addClass('interr')
+    $('.inputTag').removeClass('interr')
+    // 无文件提示框变红
+    if (!$('#imgfill')[0].files[0]) return $('#imgfill').parent().addClass('interr')
+    $('#imgfill').parent().removeClass('interr')
+
+    if ($('#imgfill')[0].files[0].size > 3145728) return tipsBox({ type: 'error', message: '文件大小限制3MB' })
+
+    let formData = new FormData();
+    formData.append("tag", $('.inputTag').val());
+    formData.append("file", $('#imgfill')[0].files[0]);
+    axios.post(`${BASE_URL}/img/upload`, formData).then(res => {
+
+      if (res.data.codo == 200) tipsBox({ type: 'success', message: '上传成功' })
+    })
+  })
+
+
+  //获取tag
+  axios.get(BASE_URL + '/imgtag').then(res => {
+    if (res.data.codo == 200) {
+      let html = ""
+      res.data.data.forEach((item, idnex) => html += `<li class='tagslist'>${item}</li>`)
+      $('#tag').html(html)
+      tagListinit()
+    }
+  })
+
+
+  //tag切换
+  var tagname
+  var imgitem
+  function tagListinit() {
+
+    $('#tag li').click(function (e) {
+      tagname = e.target.innerText
+      $('#tag .active').removeClass('active');
+      $(this).addClass('active');
+
+      axios.get(`${BASE_URL}/imglist?tag=${e.target.innerText}`).then(res => {
+        if (res.data.codo == 200) {
+          let html = ''
+          res.data.data.forEach((item, idnex) => html += ` <li><img src=${BASE_URL + item.url}  id=${item.id} /> </li>`)
+          $('#imglist').html(html)
+
+
+          //右击菜单
+          $('#imglist li').contextmenu(function (e) {
+            imgitem = e.target
+            $('.right_menu').css('display', 'block')
+            $('.right_menu').css('top', e.clientY)
+            $('.right_menu').css('left', e.clientX)
+          });
+
+        }
+      })
+      return false;
+    });
+
+
+  }
+
+
+  //右键拷贝
+  $('.right_menu .copy').click((e) => {
+    const input = document.querySelector('#cpoyspan');
+    input.value = imgitem.src
+    input.select();
+    if (document.execCommand('copy')) {
+      document.execCommand('copy');
+      tipsBox({ type: 'success', message: imgitem.src })
+    }
+  })
+
+  //右键删除
+  $('.right_menu .delete').click((e) => {
+    if (imgitem.id) {
+      axios.delete(`${BASE_URL}/imgdelete?id=${imgitem.id}&pwd=${$('#pwd').val()}`).then(res => {
+        if (res.data.codo == 200) {
+          axios.get(`${BASE_URL}/imglist?tag=${tagname}`).then(res => {
+            if (res.data.codo == 200) {
+              let html = ''
+              res.data.data.forEach((item, idnex) => {
+                html += ` <li><img src=${BASE_URL + item.url}  id=${item.id} /> </li>`
+              })
+              $('#imglist').html(html)
+              imgListinit()  //异步数据需重新加载
+            }
+            tipsBox({ type: 'success', message: '删除成功' })
+          })
+        } else {
+          tipsBox({ type: 'error', message: res.data.msg })
+        }
+      })
+    } else {
+      tipsBox({ type: 'error', message: '此图不可删哦！' })
+    }
+  })
+
+  $('body').click((e) => {
+    $('.right_menu').css('display', 'none')
+  })
+
+
+</script>
+
+</html>

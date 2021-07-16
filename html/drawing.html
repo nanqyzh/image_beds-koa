@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小小画板</title>
+</head>
+<style>
+  * {
+    padding: 0;
+    margin: 0;
+  }
+
+  body {
+    /* cursor: url('./pen.png'), default; */
+  }
+
+  ul li {
+    list-style: none;
+
+  }
+
+  #canvas {}
+
+  .headbar {
+    width: 50px;
+    height: 250px;
+    border: 1px solid #555;
+    position: fixed;
+    top: 50px;
+    left: 30px;
+    /* right: 0; */
+
+  }
+
+  .headbar>div {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #555;
+    margin: 5px auto;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+  }
+
+  .headbar .active {
+    border: 2px solid red;
+  }
+
+
+  #peninfo {
+    width: 200px;
+    height: 100px;
+    background-color: #f5f5f5;
+    position: absolute;
+    top: -2px;
+    left: 55px;
+    float: left;
+  }
+
+  #peninfo ul {
+    width: 200px;
+    float: left;
+    display: flex;
+    justify-content: center;
+  }
+
+  #peninfo ul>li {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 5px;
+    cursor: pointer;
+  }
+
+  #peninfo ul>li>div {
+    width: 24px;
+    height: 24px;
+
+    border-radius: 50%;
+    margin: 3px;
+  }
+
+  #peninfo ul>.active {
+    border: 2px solid;
+  }
+</style>
+
+<body>
+
+  <div id="maskingf">
+    <canvas id="canvas">
+      您的浏览器不支持canvas,请升级或更换浏览器
+    </canvas>
+  </div>
+
+
+  <div class="headbar">
+    <div id="pen" class="tab_item active">画笔</div>
+    <div id="rubber" class="tab_item">橡皮</div>
+    <div id="del" class="tab_item">清空</div>
+    <div id="retreat" class="tab_item">后退</div>
+    <div id="go" class="tab_item">前进</div>
+
+    <div id="peninfo">
+      <ul>
+        <li class="color_item active" style="border-color: red;">
+          <div style=" background-color: red;">
+          </div>
+        </li>
+        <li class="color_item" style="border-color: yellow;">
+          <div style="background-color: yellow;"></div>
+        </li>
+        <li class="color_item" style="border-color: blue;">
+          <div style="background-color: blue;"></div>
+        </li>
+        <li class="color_item" style="border-color:green;">
+          <div style="background-color: green;"></div>
+        </li>
+      </ul>
+      <ul>
+        <li class="size_item active"> 2.5 </li>
+        <li class="size_item "> 5 </li>
+        <li class="size_item "> 7.5 </li>
+        <li class="size_item "> 10 </li>
+      </ul>
+    </div>
+  </div>
+
+
+
+  <script>
+
+    const canvas = document.getElementById('canvas')
+    canvas.width = document.documentElement.clientWidth;
+    canvas.height = document.documentElement.clientHeight;
+
+
+    const ctx = canvas.getContext('2d')
+
+    let tool = 'pen'
+    let paintbrush = false//画笔状态
+    let eraserEnabled = false//橡皮擦状态
+
+    // 记录画笔最后一次的位置
+    let lastPoint = { x: undefined, y: undefined };
+    let penszie = 2.5//画笔大小
+    let pencolor = 'red'//画笔颜色
+
+
+
+
+
+    let tab_item = document.getElementsByClassName('tab_item')
+    let color_item = document.getElementsByClassName('color_item')
+    let size_item = document.getElementsByClassName('size_item')
+
+    let peninfo = document.querySelector("#peninfo")
+
+
+    //工具栏
+    for (var i = 0; i < tab_item.length; i++) {
+
+      tab_item[i].onclick = function () {
+        peninfo.style.display = 'none'
+        for (var j = 0; j < tab_item.length; j++) {
+          tab_item[j].classList.remove("active");
+        }
+
+        this.classList.add("active");
+        if (this.id == 'pen') {
+          tool = 'pen'
+          peninfo.style.display = 'block'
+        }
+        if (this.id == 'rubber') {
+          tool = 'rubber'
+        }
+        if (this.id == 'del') {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, canvas.width, canvas.height)
+          ctx.beginPath()
+          this.classList.remove("active");
+        }
+
+
+        if (this.id == 'retreat') {
+          this.classList.remove("active");
+          canvasUndo('retreat')
+        }
+        if (this.id == 'go') {
+          this.classList.remove("active");
+          canvasUndo('go')
+        }
+
+      }
+    }
+
+
+    //画笔工具
+    for (var i = 0; i < color_item.length; i++) {
+
+      color_item[i].onclick = function () {
+        for (var j = 0; j < color_item.length; j++) {
+          color_item[j].classList.remove("active");
+        }
+
+        pencolor = this.style.borderColor
+        this.classList.add("active");
+
+      }
+    }
+    for (var i = 0; i < size_item.length; i++) {
+      size_item[i].onclick = function () {
+        for (var j = 0; j < size_item.length; j++) {
+          size_item[j].classList.remove("active");
+        }
+        penszie = this.innerHTML
+
+        this.classList.add("active");
+
+      }
+    }
+
+    //画布操作
+    canvas.onmousedown = function (e) {
+      peninfo.style.display = 'none'
+      if (tool == 'pen') {
+        paintbrush = true
+        eraserEnabled = false
+        lastPoint = { 'x': e.x, 'y': e.y };
+      } else if (tool == 'rubber') {
+        paintbrush = false
+        eraserEnabled = true
+        x1 = e.x
+        y1 = e.y
+        //橡皮擦圆形
+        ctx.save()
+        ctx.beginPath()
+        ctx.arc(x1, y1, penszie, 0, 2 * Math.PI);
+        ctx.clip()
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+      }
+    }
+
+    canvas.onmousemove = function (e) {
+      if (paintbrush) {//画
+        drawLine(lastPoint.x, lastPoint.y, e.x, e.y);
+        lastPoint = { x: e.x, y: e.y };
+      }
+      if (eraserEnabled) {//'擦'
+        x2 = e.x
+        y2 = e.y
+
+        //获取两个点之间的剪辑区域四个端点
+        var asin = penszie * Math.sin(Math.atan((y2 - y1) / (x2 - x1)));
+        var acos = penszie * Math.cos(Math.atan((y2 - y1) / (x2 - x1)))
+        var x3 = x1 + asin;
+        var y3 = y1 - acos;
+        var x4 = x1 - asin;
+        var y4 = y1 + acos;
+        var x5 = x2 + asin;
+        var y5 = y2 - acos;
+        var x6 = x2 - asin;
+        var y6 = y2 + acos;
+
+        //保证线条的连贯，所以在矩形一端画圆
+        ctx.save()
+        ctx.beginPath()
+        ctx.arc(x2, y2, penszie, 0, 2 * Math.PI);
+        ctx.clip()
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        //清除矩形剪辑区域里的像素
+        ctx.save()
+        ctx.beginPath()
+        ctx.moveTo(x3, y3);
+        ctx.lineTo(x5, y5);
+        ctx.lineTo(x6, y6);
+        ctx.lineTo(x4, y4);
+        ctx.closePath();
+        ctx.clip()
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        //记录最后坐标
+        x1 = x2;
+        y1 = y2;
+
+      }
+    }
+
+    canvas.onmouseup = function (e) {
+      paintbrush = false
+      eraserEnabled = false
+      ctx.beginPath()
+      canvasDraw()
+    }
+
+    let canvasHistory = [];
+    let step = -1;
+
+    // 绘制方法
+    function canvasDraw() {
+      step++;
+      if (step < canvasHistory.length) {
+        canvasHistory.length = step;  // 截断数组
+      }
+      canvasHistory.push(canvas.toDataURL());  // 添加新的绘制到历史记录
+    }
+
+
+    // 步骤方法
+    function canvasUndo(msg) {
+      if (msg == 'retreat' && step > 0) {
+        step--;
+        let canvasPic = new Image();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvasPic.src = canvasHistory[step];
+        canvasPic.onload = function () { ctx.drawImage(canvasPic, 0, 0); }
+        return
+      }
+      if (msg == 'go' && step < canvasHistory.length - 1) {
+
+        step++;
+        let canvasPic = new Image();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvasPic.src = canvasHistory[step];
+        canvasPic.onload = function () { ctx.drawImage(canvasPic, 0, 0); }
+        return
+      }
+
+      alert('无步骤可执行')
+    }
+
+
+    // 画线
+    function drawLine(x1, y1, x2, y2) {
+      ctx.lineWidth = penszie;
+      ctx.lineCap = "round"; // 设置线条末端样式。
+      ctx.lineJoin = "round";// 设定线条与线条间接合处的样式
+      ctx.strokeStyle = pencolor
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      // 通过线条来绘制图形轮廓
+      ctx.stroke();
+      // ctx.closePath();
+    }
+
+
+
+
+
+  </script>
+</body>
+
+</html>
